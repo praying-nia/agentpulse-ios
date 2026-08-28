@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ios:
+    name: iOS checks
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Check repository hygiene
+        shell: bash
+        run: |
+          test -s README.md
+          git show --check --format= HEAD
+
+      - name: Inspect Xcode project
+        shell: bash
+        run: |
+          workspace="$(find . -type d -name '*.xcworkspace' -not -path '*/.xcodeproj/*' -print -quit)"
+          project="$(find . -type d -name '*.xcodeproj' -print -quit)"
+
+          if [[ -n "$workspace" ]]; then
+            xcodebuild -list -workspace "$workspace"
+          elif [[ -n "$project" ]]; then
+            xcodebuild -list -project "$project"
+          else
+            echo "Xcode project is not present yet; repository checks only."
+          fi
+
+      - name: Create CI source snapshot
+        id: snapshot
+        shell: bash
+        run: |
+          archive="${GITHUB_REPOSITORY#*/}-${GITHUB_SHA::12}-source.tar.gz"
+          tar --exclude='.git' --exclude='.git/*' --exclude="$archive" -czf "$archive" .
+          echo "archive=$archive" >> "$GITHUB_OUTPUT"
+
+      - name: Upload CI source artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ github.event.repository.name }}-source-${{ github.sha }}
+          path: ${{ steps.snapshot.outputs.archive }}
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
