@@ -17,4 +17,3 @@ The app communicates through the shared AgentPulse protocol and does not connect
 Repository scaffold only; the iOS project has not been initialized.
 
 当前仅完成仓库占位，尚未初始化 iOS 工程。
-
