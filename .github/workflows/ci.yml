@@ -15,8 +15,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  ios:
-    name: iOS checks
+  apple:
+    name: macOS and iOS builds
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
@@ -29,26 +29,18 @@ jobs:
           test -s README.md
           git show --check --format= HEAD
 
-      - name: Inspect Xcode project
-        shell: bash
-        run: |
-          workspace="$(find . -type d -name '*.xcworkspace' -not -path '*/.xcodeproj/*' -print -quit)"
-          project="$(find . -type d -name '*.xcodeproj' -print -quit)"
+      - name: Build macOS app
+        run: xcodebuild -project AgentPulse.xcodeproj -scheme AgentPulse -destination 'platform=macOS' -derivedDataPath build/macOS CODE_SIGNING_ALLOWED=NO build
 
-          if [[ -n "$workspace" ]]; then
-            xcodebuild -list -workspace "$workspace"
-          elif [[ -n "$project" ]]; then
-            xcodebuild -list -project "$project"
-          else
-            echo "Xcode project is not present yet; repository checks only."
-          fi
+      - name: Build with iPhone SDK
+        run: xcodebuild -project AgentPulse.xcodeproj -target AgentPulse -sdk iphoneos -configuration Debug SYMROOT="$PWD/build/iOS" CODE_SIGNING_ALLOWED=NO build
 
       - name: Create CI source snapshot
         id: snapshot
         shell: bash
         run: |
           archive="${RUNNER_TEMP}/${GITHUB_REPOSITORY#*/}-${GITHUB_SHA::12}-source.tar.gz"
-          tar --exclude='.git' --exclude='.git/*' -czf "$archive" .
+          tar --exclude='.git' --exclude='.git/*' --exclude='./build' -czf "$archive" .
           echo "archive=$archive" >> "$GITHUB_OUTPUT"
 
       - name: Upload CI source artifact

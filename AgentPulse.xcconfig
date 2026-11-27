@@ -1,0 +1,17 @@
+PRODUCT_NAME = AgentPulse
+PRODUCT_BUNDLE_IDENTIFIER = moe.gensoukyo.agentpulse
+SUPPORTED_PLATFORMS = macosx iphoneos iphonesimulator
+SDKROOT = auto
+ALWAYS_SEARCH_USER_PATHS = NO
+IPHONEOS_DEPLOYMENT_TARGET = 17.0
+MACOSX_DEPLOYMENT_TARGET = 14.0
+TARGETED_DEVICE_FAMILY = 1
+SUPPORTS_MACCATALYST = NO
+SWIFT_VERSION = 6.0
+CODE_SIGN_STYLE = Automatic
+GENERATE_INFOPLIST_FILE = YES
+CURRENT_PROJECT_VERSION = 1
+MARKETING_VERSION = 0.1.0
+INFOPLIST_KEY_LSApplicationCategoryType = public.app-category.developer-tools
+INFOPLIST_KEY_NSLocalNetworkUsageDescription = Connect to your paired AgentPulse Host on your local network.
+INFOPLIST_KEY_UILaunchScreen_Generation = YES
